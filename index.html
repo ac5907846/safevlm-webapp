@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qualifying VLMs as Construction Safety Inspectors</title>
+<meta name="description" content="Companion tool: do open-source vision-language models know when they are wrong on construction-safety images?">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z' fill='%23D4EBF2' stroke='%23000' stroke-width='2'/%3E%3Cpath d='m10 16 4.5 4.5L22 12' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <div class="title">Qualifying VLMs as Construction Safety Inspectors</div>
+      <div class="subtitle">Confidence calibration, selective prediction and conformal risk control</div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-findings" aria-controls="findings" data-tab="findings">Findings</button>
+      <button role="tab" id="tab-lab" aria-controls="lab" data-tab="lab">Lab</button>
+      <button role="tab" id="tab-answers" aria-controls="answers" data-tab="answers">Answers</button>
+      <button role="tab" id="tab-repro" aria-controls="repro" data-tab="repro">Reproducibility</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="findings" role="tabpanel" aria-labelledby="tab-findings" hidden></section>
+  <section id="lab" role="tabpanel" aria-labelledby="tab-lab" hidden></section>
+  <section id="answers" role="tabpanel" aria-labelledby="tab-answers" hidden></section>
+  <section id="repro" role="tabpanel" aria-labelledby="tab-repro" hidden></section>
+</main>
+
+<footer class="foot"><div class="wrap" id="foot">Companion tool to the article. Every value is computed from the study’s stored model outputs.</div></footer>
+
+<div id="tip" class="tip" role="status" aria-live="off"></div>
+<noscript><p class="wrap">This tool needs JavaScript.</p></noscript>
+
+<script src="js/fmt.js"></script>
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/crc.js"></script>
+<script src="js/findings.js"></script>
+<script src="js/lab.js"></script>
+<script src="js/answers.js"></script>
+<script src="js/repro.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
