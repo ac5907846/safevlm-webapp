@@ -43,5 +43,8 @@
     });
   }
 
-  global.Data = { get: get, boot: boot, store: store, model: model, dataset: dataset, esc: esc };
+  /* drop a failed download so the next get() tries again */
+  function forget(path) { delete cache[path]; }
+
+  global.Data = { get: get, forget: forget, boot: boot, store: store, model: model, dataset: dataset, esc: esc };
 })(window);

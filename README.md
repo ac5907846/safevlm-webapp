@@ -20,17 +20,20 @@ Each tab is its own view with its own address, so a view can be linked and the b
 | Answers | `#answers?story=…&qid=…` | illustrative benchmark items and what each of the six models wrote back, verbatim, with the decision rule's outcome |
 | Reproducibility | `#repro` | recomputes all published conformal operating points live; the manuscript audit, SHA-256 fingerprints of every stored file, pinned model revisions, measured GPU hours |
 
-At start the page loads `data/meta.json` (2 kB) and the one model's answers the landing picture
-draws (`data/lab/qwen25vl_7b.json`, 184 kB). Every other file is fetched the first time the tab
-that needs it opens.
+At start the page loads `data/meta.json` (2 kB) and the landing picture's answers
+(`data/hero.json`, 76 kB, 34 kB compressed: one model's confidences packed as three-byte integers
+that decode to exactly the Lab's values). Both are preloaded while the scripts arrive, a loading
+frame is painted before any script runs, and the calibration plane below the fold is fetched only
+after the picture is drawn. Every other file is fetched the first time the tab that needs it opens.
 
 The landing picture draws every answer of Qwen2.5-VL-7B to a violation question as one dot,
 placed by the model's confidence, right answers above the line and wrong ones below, and plays
 the four qualification questions on it: every answer trusted, confidence against correctness,
-the conformal gate deferring the uncertain answers, and the same gate on the other sites. It
-plays by itself and loops; any click, key or scroll stops it, and the Play/Pause button in the
-picture's corner resumes or pauses it. It never starts on a shared deep link or with reduced
-motion.
+the conformal gate deferring the uncertain answers, and the same gate on the other sites; the
+calibration plane below steps through the datasets and the zero-shot and fine-tuned pairs. Both
+play by themselves and loop; any click, key or scroll stops them, and each has a Play/Pause
+button in its corner. They do not start on a shared deep link; with reduced motion the stages
+still change, without the moving dots.
 
 ## Running it locally
 

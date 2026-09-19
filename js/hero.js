@@ -222,7 +222,8 @@
 
   function frame() {
     raf = null;
-    var now = performance.now(), busy = false, groups = {}, faded = [];
+    /* with reduced motion every move lands at once; the stages still change */
+    var now = M.reduced ? 1e15 : performance.now(), busy = false, groups = {}, faded = [];
     for (var i = 0; i < P.length; i++) {
       var p = P[i];
       if (now < p.t0) { busy = true; }
@@ -349,6 +350,79 @@
     });
   }
 
+  /* ---------------------------------------------------------------- print */
+  /* the same picture as SVG, at rest: every dot a circle and every label text, so a printed
+     or PDF copy of the page stays vector */
+  function svg() {
+    var o = [], fam = getComputedStyle(document.body).fontFamily.replace(/"/g, "'");
+    function tx(x, y, s, fill, anchor) {
+      o.push('<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" fill="' + fill + '"' +
+        (anchor ? ' text-anchor="' + anchor + '"' : '') + '>' + D.esc(s) + '</text>');
+    }
+    o.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + g.w + ' ' + g.h + '" width="' + g.w +
+      '" height="' + g.h + '" font-family="' + fam + '" font-size="11">');
+    var gated = st.stage >= 2, lx = gated ? xOf(lam) : null;
+    if (gated) {
+      o.push('<rect x="' + lx.toFixed(1) + '" y="' + (g.top - 12) + '" width="' + (g.x1 - lx + 4).toFixed(1) +
+        '" height="' + (g.up + g.dn + 12) + '" fill="rgb(212,235,242)" fill-opacity=".55"/>');
+    }
+    o.push('<rect x="' + (g.x0 - 4) + '" y="' + (g.base - 0.5) + '" width="' + (g.x1 - g.x0 + 8) + '" height="1" fill="' + RULE + '"/>');
+    tx(g.x0 - 8, g.base - 6, 'right', INK2, 'end');
+    tx(g.x0 - 8, g.base + 14, 'wrong', INK2, 'end');
+    var by = {};
+    P.forEach(function (p) { if (p.ta > 0.01) (by[p.nc] = by[p.nc] || []).push(p); });
+    Object.keys(by).forEach(function (c) {
+      o.push('<g fill="' + COL[c] + '">');
+      by[c].forEach(function (p) {
+        o.push('<circle cx="' + p.tx.toFixed(2) + '" cy="' + p.ty.toFixed(2) + '" r="' + g.r.toFixed(2) + '"/>');
+      });
+      o.push('</g>');
+    });
+    tx(g.ax0, g.base + 34, 'cannot', INK3);
+    tx(g.ax0, g.base + 47, 'determine', INK3);
+    tx(g.ax0, g.base + 60, F.int(cur ? cur.ab : 0), INK2);
+    if (gated) {
+      o.push('<rect x="' + (Math.round(lx) - 0.75) + '" y="' + (g.top - 12) + '" width="1.5" height="' + (g.up + g.dn + 12) + '" fill="' + INK + '"/>');
+      tx(lx + 6, g.top - 1, 'λ ' + F.num(lam, 3) + '   automated →', INK);
+      tx(lx - 6, g.top - 1, '← deferred to an inspector', INK3, 'end');
+    }
+    if (st.stage === 1) {
+      var li = list(st.site), su = 0, nu = 0, sd = 0, nd = 0;
+      li.forEach(function (it) {
+        if (it.o === 'abstain') return;
+        if (it.right) { su += it.c; nu++; } else { sd += it.c; nd++; }
+      });
+      [[su / nu, -1], [sd / nd, 1]].forEach(function (m) {
+        var x = xOf(m[0]), y1 = g.base + m[1] * (m[1] < 0 ? g.up - 8 : g.dn - 8);
+        o.push('<line x1="' + x + '" y1="' + g.base + '" x2="' + x + '" y2="' + y1 + '" stroke="' + INK +
+          '" stroke-width="1.2" stroke-dasharray="3 3"/>');
+        tx(x + 5, m[1] < 0 ? y1 + 10 : y1, 'mean ' + F.num(m[0], 2), INK);
+      });
+    }
+    var ya = g.base + g.dn + 14;
+    [0.4, 0.5, 0.7, 0.9, 0.99, 0.999].forEach(function (c) {
+      var x = xOf(c);
+      o.push('<rect x="' + (x - 0.5).toFixed(1) + '" y="' + (ya - 12) + '" width="1" height="4" fill="' + INK3 + '"/>');
+      tx(x, ya + 2, F.num(c, c < 0.99 ? 1 : c < 0.999 ? 2 : 3), INK3, 'middle');
+    });
+    tx((g.x0 + g.x1) / 2, ya + 20, 'model confidence (answer-token probability)', INK2, 'middle');
+    o.push('</svg>');
+    return o.join('');
+  }
+
+  /* swap the canvas for its SVG twin (used before printing the page to PDF) */
+  function vector() {
+    if (!lab) return false;
+    var old = el.cv.querySelector('.hero-svg');
+    if (old) old.remove();
+    var d = document.createElement('div');
+    d.className = 'hero-svg';
+    d.innerHTML = svg();
+    el.cv.insertBefore(d, cv);
+    cv.style.display = 'none';
+    return true;
+  }
+
   /* ---------------------------------------------------------------- hover */
   function hover(e) {
     if (!cur) return;
@@ -457,13 +531,54 @@
     });
     cv.addEventListener('mousemove', hover);
     cv.addEventListener('mouseleave', K.hideTip);
-    if (global.Tour) global.Tour.attach(el.cv);
-    return D.get('lab/' + MODEL + '.json').then(function (j) {
-      lab = j;
+    if (global.Tour) global.Tour.hero.attach(el.cv);
+    preview();
+    return load();
+  }
+
+  /* before the answers arrive: the headline number and a visible wait, never a blank box */
+  function preview() {
+    var h = D.store.meta.headline;
+    el.ro.innerHTML = code('Q1', 'Detection reliability') +
+      '<div class="ro-v">' + M.span(h.crc_fnr_none, 'pct1', 'a') + '</div>' +
+      '<div class="ro-l">of real violations missed when every answer is trusted</div>';
+    M.count(el.ro, 1400);
+    wait('<span class="hw-bar"><i></i></span>Loading the model’s answers…');
+  }
+  function wait(html) {
+    var w = el.cv.querySelector('.hero-wait');
+    if (!html) { if (w) w.remove(); return; }
+    if (!w) { w = document.createElement('div'); w.className = 'hero-wait'; el.cv.appendChild(w); }
+    w.innerHTML = html;
+  }
+
+  /* the answers come from a small file of their own (data/hero.json), so the first page stays
+     light; on a slow line the wait says so, and a failed download offers a retry */
+  function load() {
+    var slow = setTimeout(function () {
+      wait('<span class="hw-bar"><i></i></span>Still loading, the connection is slow…');
+    }, 5000);
+    return D.get('hero.json').then(function (j) {
+      clearTimeout(slow);
+      var sets = {};
+      Object.keys(j.sets).forEach(function (tag) {
+        var s = j.sets[tag];
+        sets[tag] = { n: s.n, conf: R.unpack(s.conf, s.n), pos: s.pos, pred: s.pred };
+      });
+      lab = { model: j.model, sets: sets };
       lam = R.fit(R.prepare(lab.sets.cs10k__calib, SIGNAL), ALPHA);
+      wait(null);
       geometry();
       rain();
       readout();
+    }, function () {
+      clearTimeout(slow);
+      D.forget('hero.json');
+      wait('The answers could not be loaded. <button type="button" class="btn hw-retry">Try again</button>');
+      el.cv.querySelector('.hw-retry').addEventListener('click', function () {
+        wait('<span class="hw-bar"><i></i></span>Loading the model’s answers…');
+        load();
+      });
     });
   }
 
@@ -503,6 +618,7 @@
 
   global.Hero = {
     mount: mount, stage: stage, site: site, resize: resize, rain: function () { if (lab) rain(); },
+    vector: vector, svg: function () { return lab ? svg() : ''; },
     ready: function () { return !!lab; }, state: function () { return { stage: st.stage, site: st.site }; }
   };
 })(window);

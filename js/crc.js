@@ -113,8 +113,18 @@
     return [ok, total];
   }
 
+  /* confidences packed as three-byte integers of millionths (data/hero.json); the division
+     gives exactly the double that parsing the six-decimal text would */
+  function unpack(b64, n) {
+    var s = atob(b64), out = new Array(n);
+    for (var i = 0; i < n; i++) {
+      out[i] = ((s.charCodeAt(3 * i) << 16) | (s.charCodeAt(3 * i + 1) << 8) | s.charCodeAt(3 * i + 2)) / 1e6;
+    }
+    return out;
+  }
+
   return {
     PAPER_ALPHAS: PAPER_ALPHAS, confOf: confOf, prepare: prepare, fit: fit,
-    evaluate: evaluate, matches: matches, checkAll: checkAll
+    evaluate: evaluate, matches: matches, checkAll: checkAll, unpack: unpack
   };
 });

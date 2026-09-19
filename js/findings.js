@@ -41,7 +41,8 @@
       '</div>' +
       '<div class="card cal">' +
       '<div class="card-h"><span>Calibration and error discrimination</span>' +
-      '<span class="muted">all 42 model × dataset pairs · hover a point, click the key</span></div>' +
+      '<span class="cal-h"><span class="muted">all 42 model × dataset pairs · hover a point, click the key</span>' +
+      '<span id="f-play"></span></span></div>' +
       '<div class="cal-b"><div id="f-scatter" class="chart cal-chart"></div>' +
       '<div class="cal-side" id="f-legend"></div></div>' +
       '</div>';
@@ -51,13 +52,18 @@
     tiles.forEach(function (b) {
       b.addEventListener('click', function () { global.Hero.stage(Number(b.getAttribute('data-stage'))); });
     });
+    if (global.Tour) global.Tour.cal.attach(document.getElementById('f-play'));
+    /* the plane sits below the fold, so its data waits until the picture above has what it
+       needs; on a slow line the first thing on screen gets the bandwidth */
+    function plane() {
+      D.get('calibration.json').then(function (rows) { cal = rows; draw(); });
+    }
     global.Hero.mount(document.getElementById('f-hero'), function (s) {
       tiles.forEach(function (b, i) {
         b.classList.toggle('on', i === s);
         b.setAttribute('aria-pressed', String(i === s));
       });
-    });
-    D.get('calibration.json').then(function (rows) { cal = rows; draw(); });
+    }).then(plane, plane);
   }
 
   function tuned(model) { return /_ft$/.test(model); }
