@@ -39,11 +39,11 @@
       tile(3, 'Q4', 'Requalification', M.span(h.shift_factor, 'times1'),
         'the missed-violation rate on ' + shift + ', threshold unchanged') +
       '</div>' +
-      '<div class="card">' +
+      '<div class="card cal">' +
       '<div class="card-h"><span>Calibration and error discrimination</span>' +
-      '<span class="muted">6 models × 7 datasets · hover for values</span></div>' +
-      '<div id="f-scatter" class="chart"></div>' +
-      '<div class="legend" id="f-legend"></div>' +
+      '<span class="muted">all 42 model × dataset pairs · hover a point, click the key</span></div>' +
+      '<div class="cal-b"><div id="f-scatter" class="chart cal-chart"></div>' +
+      '<div class="cal-side" id="f-legend"></div></div>' +
       '</div>';
     M.count(root.querySelector('.kicker'));
     M.count(document.getElementById('f-miq'));
@@ -60,57 +60,85 @@
     D.get('calibration.json').then(function (rows) { cal = rows; draw(); });
   }
 
+  function tuned(model) { return /_ft$/.test(model); }
+
   function draw() {
     if (!cal) return;
     var h = D.store.meta.headline;
     var pts = cal.map(function (r) {
       var m = D.model(r.model), d = D.dataset(r.dataset);
       return {
-        x: r.ece, y: r.auroc, color: d.color, shape: SHAPE[r.model], r: 5.4, key: r.dataset,
+        x: r.ece, y: r.auroc, color: d.color, shape: SHAPE[r.model], r: 5, key: r.dataset,
         tip: '<b>' + m.short + ' · ' + d.short + '</b><br>' +
           '<span class="k">AUROC</span> ' + F.num(r.auroc, 3) + '<br>' +
           '<span class="k">ECE</span> ' + F.num(r.ece, 3) + '<br>' +
           '<span class="k">accuracy</span> ' + F.pct(r.acc, 1)
       };
     });
-    K.scatter(document.getElementById('f-scatter'), {
-      height: 360, points: pts, xDomain: [0, 0.42], yDomain: [0.38, 0.95],
-      xLabel: 'calibration error (ECE)', yLabel: 'AUROC',
+    /* calibration error on a log scale: most pairs sit below .1 and would crowd a linear axis */
+    var f = K.scatter(document.getElementById('f-scatter'), {
+      height: 290, points: pts, logX: true, xDomain: [0.014, 0.45], yDomain: [0.4, 0.95],
+      xTicks: [0.02, 0.05, 0.1, 0.2, 0.4], margin: { t: 8, r: 10, b: 40, l: 46 },
+      xLabel: 'calibration error (ECE, log scale)', yLabel: 'AUROC',
       bandY: [0.45, 0.55], refY: h.probe_auroc,
-      refLabel: 'hidden-state probe ' + F.num(h.probe_auroc, 2)
+      refLabel: 'hidden-state probe ' + F.num(h.probe_auroc, 3)
+    });
+    /* each mark also knows its model and whether that model was fine-tuned */
+    f.svg.querySelectorAll('.mark').forEach(function (g, i) {
+      g.setAttribute('data-m', cal[i].model);
+      g.setAttribute('data-g', tuned(cal[i].model) ? 'ft' : 'zs');
     });
     if (!drawn) M.pop(document.querySelectorAll('#f-scatter .mark'), 24);
     drawn = true;
-    legend();
+    side(h.probe_auroc);
   }
 
-  /* for the tour: show one dataset's points and fade the rest; null shows all */
-  function spotlight(key) {
+  /* show one group of points and fade the rest: a dataset key (the tour), or [attribute, value];
+     null shows all */
+  var lit = null;
+  function spotlight(sel) {
+    if (typeof sel === 'string') sel = ['data-k', sel];
+    lit = sel;
     document.querySelectorAll('#f-scatter .mark').forEach(function (g) {
-      g.classList.toggle('dim', key !== null && g.getAttribute('data-k') !== key);
+      g.classList.toggle('dim', !!sel && g.getAttribute(sel[0]) !== sel[1]);
     });
-    document.querySelectorAll('#f-legend .lg[data-k]').forEach(function (l) {
-      l.classList.toggle('on', l.getAttribute('data-k') === key);
+    document.querySelectorAll('#f-legend .lg').forEach(function (l) {
+      l.classList.toggle('on', !!sel && l.getAttribute('data-a') === sel[0] && l.getAttribute('data-v') === sel[1]);
     });
   }
 
-  function legend() {
-    var host = document.getElementById('f-legend');
-    var html = '<div class="lg-row">';
+  function side(probe) {
+    var zs = cal.filter(function (r) { return !tuned(r.model); });
+    var ft = cal.filter(function (r) { return tuned(r.model); });
+    function above(rows) { return rows.filter(function (r) { return r.auroc > probe; }).length; }
+    function item(attr, v, swatch, label) {
+      return '<button type="button" class="lg" data-a="' + attr + '" data-v="' + v + '">' + swatch + label + '</button>';
+    }
+    var html = '<div class="cal-k">above the probe line</div><div class="lg-grid one">' +
+      item('data-g', 'zs', '<b>' + above(zs) + '</b>', 'of ' + zs.length + ' zero-shot pairs') +
+      item('data-g', 'ft', '<b>' + above(ft) + '</b>', 'of ' + ft.length + ' fine-tuned pairs') + '</div>';
+    html += '<div class="cal-k">dataset</div><div class="lg-grid">';
     D.store.meta.datasets.forEach(function (d) {
-      html += '<span class="lg" data-k="' + d.key + '"><i class="dot" style="background:' +
-        d.color + '"></i>' + d.short + '</span>';
+      html += item('data-k', d.key, '<i class="dot" style="background:' + d.color + '"></i>', d.short);
     });
-    html += '</div><div class="lg-row">';
+    html += '</div><div class="cal-k">model</div><div class="lg-grid">';
     D.store.meta.models.forEach(function (m) {
-      html += '<span class="lg"><svg width="14" height="14" viewBox="0 0 14 14" data-shape="' +
-        SHAPE[m.key] + '"></svg>' + m.short + '</span>';
+      html += item('data-m', m.key, '<svg width="14" height="14" viewBox="0 0 14 14" data-shape="' +
+        SHAPE[m.key] + '"></svg>', m.short);
     });
-    html += '<span class="lg"><i class="band"></i>chance</span></div>';
+    html += '</div>';
+    var host = document.getElementById('f-legend');
     host.innerHTML = html;
     host.querySelectorAll('svg[data-shape]').forEach(function (svg) {
       K.shape(svg, svg.getAttribute('data-shape'), 7, 7, 4.6, '#565b66', false);
     });
+    host.querySelectorAll('.lg').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var sel = [b.getAttribute('data-a'), b.getAttribute('data-v')];
+        spotlight(lit && lit[0] === sel[0] && lit[1] === sel[1] ? null : sel);
+      });
+    });
+    if (lit) spotlight(lit);
   }
 
   global.Findings = {

@@ -457,6 +457,7 @@
     });
     cv.addEventListener('mousemove', hover);
     cv.addEventListener('mouseleave', K.hideTip);
+    if (global.Tour) global.Tour.attach(el.cv);
     return D.get('lab/' + MODEL + '.json').then(function (j) {
       lab = j;
       lam = R.fit(R.prepare(lab.sets.cs10k__calib, SIGNAL), ALPHA);

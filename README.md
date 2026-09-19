@@ -27,9 +27,9 @@ that needs it opens.
 The landing picture draws every answer of Qwen2.5-VL-7B to a violation question as one dot,
 placed by the model's confidence, right answers above the line and wrong ones below, and plays
 the four qualification questions on it: every answer trusted, confidence against correctness,
-the conformal gate deferring the uncertain answers, and the same gate on the other sites. A
-short automatic tour then runs through the four tabs. Any click, key or scroll stops it; the
-button in the corner pauses and resumes. It never starts on a shared deep link or with reduced
+the conformal gate deferring the uncertain answers, and the same gate on the other sites. It
+plays by itself and loops; any click, key or scroll stops it, and the Play/Pause button in the
+picture's corner resumes or pauses it. It never starts on a shared deep link or with reduced
 motion.
 
 ## Running it locally
@@ -95,6 +95,6 @@ Images were resized and re-encoded as WebP; nothing else was changed.
 | `js/findings.js`, `js/lab.js`, `js/answers.js`, `js/repro.js` | one module per tab |
 | `js/hero.js` | the landing picture: every answer as a dot, the four qualification stages |
 | `js/motion.js` | numbers that count up to their value, marks that pop in |
-| `js/tour.js` | the automatic tour and its play/pause button |
+| `js/tour.js` | the landing picture's autoplay and its Play/Pause button |
 | `js/app.js` | the tab router |
 | `CNAME` | the custom domain for GitHub Pages |
