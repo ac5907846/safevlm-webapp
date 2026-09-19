@@ -99,9 +99,13 @@ section.busy { opacity: .55; transition: opacity .15s; }
 
 /* ------------------------------------------------------------------ hero */
 .hero { padding: 14px 18px 10px; margin-bottom: 14px; }
-.hero-h { display: flex; justify-content: space-between; align-items: center; gap: 8px 16px; flex-wrap: wrap; margin: 0 0 4px; }
-.hero-t { font-weight: 600; font-size: 14.5px; }
-.hero-t span { font-weight: 400; color: var(--ink-3); font-size: 12.5px; margin-left: 10px; }
+/* the heading and its one-line subtitle take a fixed width, so the dataset chips on the right never
+   move when the subtitle changes with the dataset */
+.hero-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px 16px; flex-wrap: wrap; margin: 0 0 4px; }
+.hero-t { font-weight: 600; font-size: 14.5px; flex: 0 1 560px; min-width: 0; }
+.hero-t span { display: block; font-weight: 400; color: var(--ink-3); font-size: 12.5px; margin-top: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-h .chips { flex: 0 1 auto; min-width: 0; }
 .hero-h .chip { padding: 3px 10px; font-size: 12.5px; }
 .hero-b { display: grid; grid-template-columns: 228px minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 820px) { .hero-b { grid-template-columns: 1fr; gap: 6px; } }

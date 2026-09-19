@@ -495,7 +495,7 @@
     }).join('') + '</div>';
 
     el.sub.textContent = MODEL_LABEL() + ' · ' + F.int(res.n) + ' violation questions · ' +
-      D.dataset(st.site).label + (st.site === HOME ? ' test split' : '') + ' · one dot per answer';
+      D.dataset(st.site).label + (st.site === HOME ? ' test split' : '');
     el.sites.querySelectorAll('button').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === st.site));
     });
@@ -507,7 +507,7 @@
   function mount(root, changed) {
     onChange = changed;
     root.innerHTML =
-      '<div class="hero-h"><div class="hero-t">Individual answers by confidence<span id="h-sub"></span></div>' +
+      '<div class="hero-h"><div class="hero-t">Individual answers by confidence (one dot per answer)<span id="h-sub"></span></div>' +
       '<div class="chips" id="h-sites"></div></div>' +
       '<div class="hero-b"><div class="ro" id="h-ro"></div>' +
       '<div><div class="hero-cv" id="h-cv"><canvas role="img" aria-label="Each answer of the model as a dot, placed by confidence"></canvas></div>' +
