@@ -196,8 +196,8 @@
 
   function source(a) {
     var key = String(a);
-    if (st.signal === 'conf_tokenprob' && key === '0.05') return st.deploy === HOME ? 'Table 5' : 'Fig. 5a';
-    if (st.signal === 'conf_tokenprob' && st.deploy === HOME) return 'Fig. 4';
+    if (st.signal === 'conf_tokenprob' && key === '0.05') return st.deploy === HOME ? 'Table 5' : 'Fig. 8a';
+    if (st.signal === 'conf_tokenprob' && st.deploy === HOME) return 'Fig. 7';
     return 'study results';
   }
 
