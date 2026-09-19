@@ -69,7 +69,10 @@
   });
 
   window.addEventListener('hashchange', show);
-  window.Data.boot().then(show).catch(function (err) {
+  window.Data.boot().then(function () {
+    show();
+    document.dispatchEvent(new Event('app:ready'));
+  }).catch(function (err) {
     document.querySelector('main').innerHTML =
       '<p class="error">Could not load the data: ' + window.Data.esc(err.message) + '</p>';
   });

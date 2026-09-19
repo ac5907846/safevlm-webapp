@@ -5,7 +5,7 @@
 (function (global) {
   'use strict';
 
-  var F = global.Fmt, D = global.Data, K = global.Charts, C = K.C, R = global.CRC;
+  var F = global.Fmt, D = global.Data, K = global.Charts, C = K.C, R = global.CRC, M = global.Motion;
 
   var MODELS = ['qwen25vl_7b', 'qwen25vl_3b', 'llava_ov_7b', 'internvl3_8b',
     'qwen25vl_7b_ft', 'qwen25vl_3b_ft'];
@@ -146,7 +146,7 @@
     var res = R.evaluate(lab.sets[st.deploy], st.signal, lam);
     var home = st.deploy === HOME ? res : R.evaluate(lab.sets[HOME], st.signal, lam);
     var ms = performance.now() - t0;
-    readout(res, home, a);
+    readout(res, home, a, !alphaOnly);
     verify(res, a, ms);
     charts(alphaOnly);
     outcomes(res);
@@ -177,16 +177,21 @@
       '<div class="l">' + l + '</div>' + (sub ? '<div class="s">' + sub + '</div>' : '') + '</div>';
   }
 
-  function readout(res, home, a) {
+  /* a jump (new site, model or estimator) glides from the old numbers; the target slider,
+     which moves in small steps, redraws at once */
+  function readout(res, home, a, glide) {
     var closed = res.lam > 1;
     var meets = res.fnr <= a + 1e-12;
     var amp = st.deploy !== HOME && home.fnr > 0 ? res.fnr / home.fnr : null;
-    document.getElementById('l-read').innerHTML =
-      big(F.pct(res.coverage, 1), 'decisions automated', null, closed ? 'no threshold meets the target' : null) +
-      big(F.pct(res.fnr, 1), 'missed violations', meets ? 'ok' : 'bad',
-        amp !== null ? F.times(amp, 1) + ' the in-distribution rate' : (meets ? 'within target' : 'over target')) +
-      big(F.pct(res.fnrNone, 1), 'missed without deferral') +
-      big(closed ? 'closed' : res.lam === 0 ? '0' : F.num(res.lam, 3), 'threshold λ');
+    var host = document.getElementById('l-read');
+    var before = M.snapshot(host);
+    host.innerHTML =
+      big(M.span(res.coverage, 'pct1', 'cov'), 'decisions automated', null, closed ? 'no threshold meets the target' : null) +
+      big(M.span(res.fnr, 'pct1', 'fnr'), 'missed violations', meets ? 'ok' : 'bad',
+        amp !== null ? M.span(amp, 'times1', 'amp') + ' the in-distribution rate' : (meets ? 'within target' : 'over target')) +
+      big(M.span(res.fnrNone, 'pct1', 'none'), 'missed without deferral') +
+      big(closed ? 'closed' : res.lam === 0 ? '0' : M.span(res.lam, 'num3', 'lam'), 'threshold λ');
+    if (glide && M.carry(before, host)) M.count(host, 600, true);
   }
 
   function source(a) {
@@ -338,5 +343,10 @@
     }).join('') + '</div>';
   }
 
-  global.Lab = { mount: mount, apply: apply, resize: function () { if (lab) render(); } };
+  global.Lab = {
+    mount: mount, apply: apply, resize: function () { if (lab) render(); },
+    ready: function () { return !!lab && lab.model === st.model && !root.classList.contains('busy'); },
+    /* for the tour: move the target without a re-layout jump */
+    target: function (k) { st.k = k; render(true); }
+  };
 })(window);

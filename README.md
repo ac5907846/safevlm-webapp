@@ -23,6 +23,11 @@ Each tab is its own view with its own address, so a view can be linked and the b
 Only `data/meta.json` (2 kB) loads at start. Every other file is fetched the first time the tab
 that needs it opens.
 
+The landing view plays a short automatic tour through the four tabs: the numbers count up, the
+Lab sweeps the target and carries the threshold to new sites, and the Reproducibility tab
+recomputes every published point. Any click, key or scroll stops it; the button in the corner
+pauses and resumes. It never starts on a shared deep link or with reduced motion.
+
 ## Running it locally
 
 `fetch` is blocked on `file://` URLs, so serve the folder:
@@ -84,5 +89,7 @@ Images were resized and re-encoded as WebP; nothing else was changed.
 | `js/charts.js` | the SVG chart toolkit |
 | `js/crc.js` | conformal risk control, written to match the paper's analysis bit for bit; also runs under Node |
 | `js/findings.js`, `js/lab.js`, `js/answers.js`, `js/repro.js` | one module per tab |
+| `js/motion.js` | numbers that count up to their value, marks that pop in |
+| `js/tour.js` | the automatic tour and its play/pause button |
 | `js/app.js` | the tab router |
 | `CNAME` | the custom domain for GitHub Pages |

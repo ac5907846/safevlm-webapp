@@ -93,13 +93,30 @@
         '<span class="t">' + (F.TEMPLATE_NAME[it.template] || it.template) + '</span></button>';
     }).join('') || '<p class="muted">No item.</p>';
     grid.querySelectorAll('.thumb').forEach(function (b) {
-      b.addEventListener('click', function () {
-        st.qid = b.getAttribute('data-qid');
-        grid.querySelectorAll('.thumb').forEach(function (x) { x.classList.toggle('on', x === b); });
-        detail();
-      });
+      b.addEventListener('click', function () { pick(b.getAttribute('data-qid')); });
     });
     detail();
+  }
+
+  function pick(qid) {
+    var grid = document.getElementById('a-grid');
+    st.qid = qid;
+    grid.querySelectorAll('.thumb').forEach(function (x) {
+      var on = x.getAttribute('data-qid') === qid;
+      x.classList.toggle('on', on);
+      /* keep the chosen thumbnail in view inside the grid, without scrolling the page */
+      if (on && (x.offsetTop < grid.scrollTop || x.offsetTop + x.offsetHeight > grid.scrollTop + grid.clientHeight)) {
+        grid.scrollTo({ top: x.offsetTop - 8, behavior: 'smooth' });
+      }
+    });
+    detail();
+  }
+
+  /* for the tour: the first item of each outcome */
+  function highlights() {
+    return STORIES.slice(1).map(function (s) {
+      return (items.filter(function (it) { return it.story === s[0]; })[0] || {}).qid;
+    }).filter(Boolean);
   }
 
   function detail() {
@@ -148,5 +165,8 @@
       ' ' + gate + '</td></tr>';
   }
 
-  global.Answers = { mount: mount, apply: apply };
+  global.Answers = {
+    mount: mount, apply: apply, pick: pick, highlights: highlights,
+    ready: function () { return items.length > 0; }
+  };
 })(window);

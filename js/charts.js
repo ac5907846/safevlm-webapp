@@ -264,7 +264,7 @@
     (opts.points || []).forEach(function (p) {
       var cx = xs(p.x), cy = ys(p.y);
       if (!isFinite(cx) || !isFinite(cy)) return;
-      var g = el('g', { class: 'mark' + (p.dim ? ' dim' : '') }, f.g);
+      var g = el('g', { class: 'mark' + (p.dim ? ' dim' : ''), 'data-k': p.key || null }, f.g);
       shape(g, p.shape || 'circle', cx, cy, p.r || 5.4, p.color || C.navy, p.selected);
       var hit = el('circle', { cx: cx, cy: cy, r: 12, class: 'hit' }, g);
       hoverable(hit, p.tip, p.onClick);

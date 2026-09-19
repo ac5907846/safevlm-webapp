@@ -4,7 +4,7 @@
 (function (global) {
   'use strict';
 
-  var F = global.Fmt, D = global.Data, R = global.CRC;
+  var F = global.Fmt, D = global.Data, R = global.CRC, M = global.Motion;
 
   var MODELS = ['qwen25vl_7b', 'qwen25vl_3b', 'llava_ov_7b', 'internvl3_8b',
     'qwen25vl_7b_ft', 'qwen25vl_3b_ft'];
@@ -73,9 +73,10 @@
       });
       var ms = performance.now() - t0;
       var all = document.getElementById('r-all');
-      all.innerHTML = F.int(ok) + '<span class="of">/' + F.int(total) + '</span>' +
+      all.innerHTML = M.span(ok, 'int') + '<span class="of">/' + F.int(total) + '</span>' +
         (ok === total ? '<span class="tick-big">✓</span>' : '');
       all.classList.toggle('bad', ok !== total);
+      M.count(all, 1300);
       document.getElementById('r-time').textContent =
         good + '/' + cells + ' Table 5 cells · ' + (ms < 1 ? '<1' : ms.toFixed(0)) + ' ms';
       table5(rows);
@@ -103,7 +104,7 @@
   function fill() {
     var a = rep.audit;
     if (a) {
-      document.getElementById('r-audit-k').textContent = F.int(a.numbers_traced);
+      document.getElementById('r-audit-k').innerHTML = M.span(a.numbers_traced, 'int');
       document.getElementById('r-audit-s').innerHTML = a.checks.length + ' checks · ' +
         (a.issues ? '<b class="bad-mark">' + a.issues + ' issues</b>' : '<b class="ok-mark">0 issues</b>');
       document.getElementById('r-checks').innerHTML = a.checks.map(function (c) {
@@ -115,7 +116,7 @@
     var preds = rep.predictions, bench = rep.benchmark;
     var answers = preds.reduce(function (s, p) { return s + p.rows; }, 0);
     var adapters = rep.models.filter(function (m) { return m.adapter; });
-    document.getElementById('r-fp-k').textContent = F.int(preds.length + bench.length + adapters.length);
+    document.getElementById('r-fp-k').innerHTML = M.span(preds.length + bench.length + adapters.length, 'int');
     document.getElementById('r-fp-s').textContent = F.int(answers) + ' answers · ' + bench.length +
       ' benchmark files · ' + adapters.length + ' adapters';
     var fp = '<table class="data mini"><tbody>';
@@ -130,7 +131,8 @@
 
     var inf = Object.keys(rep.gpu_hours).reduce(function (s, k) { return s + rep.gpu_hours[k]; }, 0);
     var ft = adapters.reduce(function (s, m) { return s + m.adapter.gpu_hours; }, 0);
-    document.getElementById('r-gpu-k').textContent = F.num(inf + ft, 0);
+    document.getElementById('r-gpu-k').innerHTML = M.span(inf + ft, 'num0');
+    M.count(document.querySelector('#repro .grid3'), 1300);
     document.getElementById('r-gpu-s').textContent = F.num(inf, 0) + ' inference · ' +
       F.num(ft, 0) + ' fine-tuning · ' + rep.hardware;
     document.getElementById('r-gpu').innerHTML = '<table class="data mini"><tbody>' +
@@ -178,5 +180,8 @@
       '<td class="mono-s hash" title="' + hash + '">' + hash.slice(0, 16) + '…</td></tr>';
   }
 
-  global.Repro = { mount: mount };
+  global.Repro = {
+    mount: mount, run: run,
+    ready: function () { var b = document.getElementById('r-run'); return !!rep && !!b && !b.disabled; }
+  };
 })(window);
