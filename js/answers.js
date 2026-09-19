@@ -9,11 +9,11 @@
     'qwen25vl_7b_ft', 'qwen25vl_3b_ft'];
   var STORIES = [
     ['all', 'All', null],
-    ['confident and wrong', 'Confident and wrong', '#d48faf'],
-    ['fixed by fine-tuning', 'Fixed by fine-tuning', '#8fbf7f'],
+    ['confident and wrong', 'High-confidence errors', '#d48faf'],
+    ['fixed by fine-tuning', 'Corrected by fine-tuning', '#8fbf7f'],
     ['said cannot determine', 'Cannot determine', '#a6a6a6'],
     ['false alarm', 'False alarm', '#e2b3c8'],
-    ['caught', 'Caught', '#7fb6c8']
+    ['caught', 'Detected', '#7fb6c8']
   ];
   var LETTERS = 'ABCDEFG';
   var GATE_ALPHA = '0.05';

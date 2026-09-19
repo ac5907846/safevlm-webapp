@@ -27,7 +27,7 @@ frame is painted before any script runs, and the calibration plane below the fol
 after the picture is drawn. Every other file is fetched the first time the tab that needs it opens.
 
 The landing picture draws every answer of Qwen2.5-VL-7B to a violation question as one dot,
-placed by the model's confidence, right answers above the line and wrong ones below, and plays
+placed by the model's confidence, correct answers above the line and incorrect ones below, and plays
 the four qualification questions on it: every answer trusted, confidence against correctness,
 the conformal gate deferring the uncertain answers, and the same gate on the other sites; the
 calibration plane below steps through the datasets and the zero-shot and fine-tuned pairs. Both

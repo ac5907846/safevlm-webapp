@@ -18,9 +18,9 @@
     deferred: '#dadde3', abstain: '#9aa1ad', right: '#8193b6', wrong: '#b8236b'
   };
   var NAME = {
-    caught: 'violation caught', missed: 'violation missed', falseAlarm: 'false alarm',
+    caught: 'violation detected', missed: 'violation missed', falseAlarm: 'false alarm',
     clear: 'correctly cleared', deferred: 'deferred to inspector', abstain: 'cannot determine',
-    right: 'right', wrong: 'wrong'
+    right: 'correct', wrong: 'incorrect'
   };
   var LEGEND = [
     ['caught', 'missed', 'falseAlarm', 'clear', 'abstain'],
@@ -268,8 +268,8 @@
     ctx.fillRect(g.x0 - 4, g.base - 0.5, g.x1 - g.x0 + 8, 1);
     ctx.fillStyle = INK2;
     ctx.textAlign = 'right';
-    ctx.fillText('right', g.x0 - 8, g.base - 6);
-    ctx.fillText('wrong', g.x0 - 8, g.base + 14);
+    ctx.fillText('correct', g.x0 - 8, g.base - 6);
+    ctx.fillText('incorrect', g.x0 - 8, g.base + 14);
 
     /* the dots, one path per color */
     Object.keys(groups).forEach(function (c) {
@@ -367,8 +367,8 @@
         '" height="' + (g.up + g.dn + 12) + '" fill="rgb(212,235,242)" fill-opacity=".55"/>');
     }
     o.push('<rect x="' + (g.x0 - 4) + '" y="' + (g.base - 0.5) + '" width="' + (g.x1 - g.x0 + 8) + '" height="1" fill="' + RULE + '"/>');
-    tx(g.x0 - 8, g.base - 6, 'right', INK2, 'end');
-    tx(g.x0 - 8, g.base + 14, 'wrong', INK2, 'end');
+    tx(g.x0 - 8, g.base - 6, 'correct', INK2, 'end');
+    tx(g.x0 - 8, g.base + 14, 'incorrect', INK2, 'end');
     var by = {};
     P.forEach(function (p) { if (p.ta > 0.01) (by[p.nc] = by[p.nc] || []).push(p); });
     Object.keys(by).forEach(function (c) {
@@ -435,7 +435,7 @@
     var b = Math.floor((x - g.x0) / g.bw), z0 = L0 + b / g.nb * (L1 - L0), z1 = L0 + (b + 1) / g.nb * (L1 - L0);
     var c0 = inv(z0), c1 = inv(z1);
     var html = '<b>confidence ' + F.num(c0, c1 < 0.99 ? 2 : 3) + ' to ' + F.num(c1, c1 < 0.99 ? 2 : 3) + '</b><br>' +
-      '<span class="k">right</span> ' + F.int(cur.cu[b]) + ' · <span class="k">wrong</span> ' + F.int(cur.cd[b]);
+      '<span class="k">correct</span> ' + F.int(cur.cu[b]) + ' · <span class="k">incorrect</span> ' + F.int(cur.cd[b]);
     if (st.stage >= 2) {
       html += '<br>' + (c1 <= lam ? 'deferred to an inspector' : c0 >= lam ? 'automated' : 'split by λ');
     }
@@ -455,15 +455,15 @@
     if (st.stage === 0) {
       html = code('Q1', 'Detection reliability') +
         '<div class="ro-v">' + M.span(res.fnrNone, 'pct1', 'a') + '</div>' +
-        '<div class="ro-l">of real violations missed when every answer is trusted</div>' +
+        '<div class="ro-l">missed-violation rate when every answer is acted on</div>' +
         '<div class="ro-s">' + F.int(res.npos) + ' violations · ' + F.int(res.n) + ' questions · ' + ds + '</div>' +
-        link('#answers?story=confident+and+wrong', 'see the answers');
+        link('#answers?story=confident+and+wrong', 'examples');
     } else if (st.stage === 1) {
       html = code('Q2', 'Self-knowledge') +
         '<div class="ro-v">' + M.span(h.token_auroc, 'num3', 'a') + '<span class="arrow"> → </span>' +
         M.span(h.probe_auroc, 'num3', 'b') + '</div>' +
         '<div class="ro-l">error-detection AUROC, output confidence → hidden-state probe</div>' +
-        '<div class="ro-s">wrong answers are about as confident as right ones</div>';
+        '<div class="ro-s">incorrect answers are about as confident as correct ones</div>';
     } else if (st.stage === 2) {
       html = code('Q3', 'Bounded delegation') +
         '<div class="ro-v">' + M.span(res.coverage, 'pct1', 'a') + '</div>' +
@@ -495,7 +495,7 @@
     }).join('') + '</div>';
 
     el.sub.textContent = MODEL_LABEL() + ' · ' + F.int(res.n) + ' violation questions · ' +
-      D.dataset(st.site).label + (st.site === HOME ? ' test split' : '');
+      D.dataset(st.site).label + (st.site === HOME ? ' test split' : '') + ' · one dot per answer';
     el.sites.querySelectorAll('button').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === st.site));
     });
@@ -507,7 +507,7 @@
   function mount(root, changed) {
     onChange = changed;
     root.innerHTML =
-      '<div class="hero-h"><div class="hero-t">Every dot is one real answer<span id="h-sub"></span></div>' +
+      '<div class="hero-h"><div class="hero-t">Individual answers by confidence<span id="h-sub"></span></div>' +
       '<div class="chips" id="h-sites"></div></div>' +
       '<div class="hero-b"><div class="ro" id="h-ro"></div>' +
       '<div><div class="hero-cv" id="h-cv"><canvas role="img" aria-label="Each answer of the model as a dot, placed by confidence"></canvas></div>' +
@@ -541,7 +541,7 @@
     var h = D.store.meta.headline;
     el.ro.innerHTML = code('Q1', 'Detection reliability') +
       '<div class="ro-v">' + M.span(h.crc_fnr_none, 'pct1', 'a') + '</div>' +
-      '<div class="ro-l">of real violations missed when every answer is trusted</div>';
+      '<div class="ro-l">missed-violation rate when every answer is acted on</div>';
     M.count(el.ro, 1400);
     wait('<span class="hw-bar"><i></i></span>Loading the model’s answers…');
   }

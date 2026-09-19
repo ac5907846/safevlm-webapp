@@ -9,6 +9,8 @@
   var STOP = { stop: true }, SKIP = { skip: true };
   var landing = location.hash.replace(/^#/, '');
   var HOME = 'cs10k__test';
+  var SITES = ['cs10k__test', 'chv', 'gdut', 'shwd', 'pictor', 'sh17'];
+  function short(s) { return global.Data.dataset(s).short; }
   var all = [];
 
   function seq(list, fn) {
@@ -134,22 +136,29 @@
   }
   var hero = create({
     name: 'the answers picture',
-    first: 'Autoplay · click anywhere to stop',
+    first: 'Autoplay · click anywhere to pause',
     resume: function (i) { return H().state ? H().state().stage : i; },
     steps: [
-      { cap: 'Q1 · every answer trusted', ms: 5600, run: function (c) {
+      { cap: 'Q1 · every answer acted on', ms: 6 * 1900, run: function (c) {
         return c.until(heroReady).then(function () {
-          H().stage(0, HOME);
-          if (c.laps() > 0) H().rain();
-          return c.sleep(5600);
+          return seq(SITES, function (s, i) {
+            H().stage(0, s);
+            if (i === 0 && c.laps() > 0) H().rain();
+            if (!(i === 0 && c.laps() === 0)) c.caption('Q1 · every answer acted on · ' + short(s));
+            return c.sleep(1900);
+          });
         });
       } },
-      { cap: 'Q2 · wrong answers are just as confident', ms: 4800, run: stage(1, 4800) },
-      { cap: 'Q3 · the conformal gate defers the rest', ms: 5400, run: stage(2, 5400) },
-      { cap: 'Q4 · same gate, new site', ms: 9400, run: function (c) {
+      { cap: 'Q2 · confidence of correct and incorrect answers', ms: 4800, run: stage(1, 4800) },
+      { cap: 'Q3 · conformal threshold and deferral', ms: 5400, run: stage(2, 5400) },
+      { cap: 'Q4 · the same threshold on other datasets', ms: 3400 + 4 * 1600, run: function (c) {
         return c.until(heroReady).then(function () {
-          return seq([['shwd', 3400], ['chv', 1500], ['gdut', 1500], ['pictor', 1500], ['sh17', 1500]],
-            function (s) { H().stage(3, s[0]); return c.sleep(s[1]); });
+          return seq(SITES.slice(1).sort(function (a, b) { return (b === 'shwd') - (a === 'shwd'); }),
+            function (s) {
+              H().stage(3, s);
+              c.caption('Q4 · the same threshold on other datasets · ' + short(s));
+              return c.sleep(s === 'shwd' ? 3400 : 1600);
+            });
         });
       } }
     ]
