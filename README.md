@@ -20,13 +20,17 @@ Each tab is its own view with its own address, so a view can be linked and the b
 | Answers | `#answers?story=…&qid=…` | illustrative benchmark items and what each of the six models wrote back, verbatim, with the decision rule's outcome |
 | Reproducibility | `#repro` | recomputes all published conformal operating points live; the manuscript audit, SHA-256 fingerprints of every stored file, pinned model revisions, measured GPU hours |
 
-Only `data/meta.json` (2 kB) loads at start. Every other file is fetched the first time the tab
+At start the page loads `data/meta.json` (2 kB) and the one model's answers the landing picture
+draws (`data/lab/qwen25vl_7b.json`, 184 kB). Every other file is fetched the first time the tab
 that needs it opens.
 
-The landing view plays a short automatic tour through the four tabs: the numbers count up, the
-Lab sweeps the target and carries the threshold to new sites, and the Reproducibility tab
-recomputes every published point. Any click, key or scroll stops it; the button in the corner
-pauses and resumes. It never starts on a shared deep link or with reduced motion.
+The landing picture draws every answer of Qwen2.5-VL-7B to a violation question as one dot,
+placed by the model's confidence, right answers above the line and wrong ones below, and plays
+the four qualification questions on it: every answer trusted, confidence against correctness,
+the conformal gate deferring the uncertain answers, and the same gate on the other sites. A
+short automatic tour then runs through the four tabs. Any click, key or scroll stops it; the
+button in the corner pauses and resumes. It never starts on a shared deep link or with reduced
+motion.
 
 ## Running it locally
 
@@ -89,6 +93,7 @@ Images were resized and re-encoded as WebP; nothing else was changed.
 | `js/charts.js` | the SVG chart toolkit |
 | `js/crc.js` | conformal risk control, written to match the paper's analysis bit for bit; also runs under Node |
 | `js/findings.js`, `js/lab.js`, `js/answers.js`, `js/repro.js` | one module per tab |
+| `js/hero.js` | the landing picture: every answer as a dot, the four qualification stages |
 | `js/motion.js` | numbers that count up to their value, marks that pop in |
 | `js/tour.js` | the automatic tour and its play/pause button |
 | `js/app.js` | the tab router |

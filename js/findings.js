@@ -11,16 +11,13 @@
   };
   var cal = null, drawn = false, host = null;
 
-  function tile(code, title, value, label, href) {
-    var tag = href ? 'a' : 'div';
-    return '<' + tag + ' class="q' + (href ? ' link' : '') + '"' +
-      (href ? ' href="' + href + '"' : '') + '>' +
+  /* the four qualification questions, each a button that sets the stage of the picture above */
+  function tile(i, code, title, value, label) {
+    return '<button type="button" class="q" data-stage="' + i + '">' +
       '<div class="q-top"><span class="q-code">' + code + '</span>' +
       '<span class="q-title">' + title + '</span></div>' +
       '<div class="q-val">' + value + '</div>' +
-      '<div class="q-lab">' + label + '</div>' +
-      (href ? '<div class="q-go">open →</div>' : '') +
-      '</' + tag + '>';
+      '<div class="q-lab">' + label + '</div></button>';
   }
 
   function mount(root) {
@@ -30,18 +27,17 @@
     root.innerHTML =
       '<div class="kicker">' + M.span(h.items, 'int') + ' questions · ' + h.datasets +
       ' public datasets · ' + h.models + ' open VLMs</div>' +
-      '<div class="miq">' +
-      tile('Q1', 'Detection reliability', M.span(h.crc_fnr_none, 'pct1'),
-        'of violations missed without deferral', '#answers?story=confident+and+wrong') +
-      tile('Q2', 'Self-knowledge',
+      '<div class="card hero" id="f-hero"></div>' +
+      '<div class="miq" id="f-miq">' +
+      tile(0, 'Q1', 'Detection reliability', M.span(h.crc_fnr_none, 'pct1'),
+        'of violations missed without deferral') +
+      tile(1, 'Q2', 'Self-knowledge',
         M.span(h.token_auroc, 'num3') + ' <span class="arrow">→</span> ' + M.span(h.probe_auroc, 'num3'),
-        'error-detection AUROC: output confidence → hidden-state probe', null) +
-      tile('Q3', 'Bounded delegation', M.span(h.crc_coverage, 'pct1'),
-        'of decisions automated, ' + F.pct(h.crc_fnr_auto, 1) + ' of violations missed',
-        '#lab?model=qwen25vl_7b&deploy=cs10k__test&alpha=0.05') +
-      tile('Q4', 'Requalification', M.span(h.shift_factor, 'times1'),
-        'the missed-violation rate on ' + shift + ', threshold unchanged',
-        '#lab?model=qwen25vl_7b&deploy=' + h.shift_dataset + '&alpha=0.05') +
+        'error-detection AUROC: output confidence → hidden-state probe') +
+      tile(2, 'Q3', 'Bounded delegation', M.span(h.crc_coverage, 'pct1'),
+        'of decisions automated, ' + F.pct(h.crc_fnr_auto, 1) + ' of violations missed') +
+      tile(3, 'Q4', 'Requalification', M.span(h.shift_factor, 'times1'),
+        'the missed-violation rate on ' + shift + ', threshold unchanged') +
       '</div>' +
       '<div class="card">' +
       '<div class="card-h"><span>Calibration and error discrimination</span>' +
@@ -49,7 +45,18 @@
       '<div id="f-scatter" class="chart"></div>' +
       '<div class="legend" id="f-legend"></div>' +
       '</div>';
-    M.count(root);
+    M.count(root.querySelector('.kicker'));
+    M.count(document.getElementById('f-miq'));
+    var tiles = [].slice.call(root.querySelectorAll('#f-miq .q'));
+    tiles.forEach(function (b) {
+      b.addEventListener('click', function () { global.Hero.stage(Number(b.getAttribute('data-stage'))); });
+    });
+    global.Hero.mount(document.getElementById('f-hero'), function (s) {
+      tiles.forEach(function (b, i) {
+        b.classList.toggle('on', i === s);
+        b.setAttribute('aria-pressed', String(i === s));
+      });
+    });
     D.get('calibration.json').then(function (rows) { cal = rows; draw(); });
   }
 
@@ -107,8 +114,11 @@
   }
 
   global.Findings = {
-    mount: mount, resize: draw, spotlight: spotlight,
-    ready: function () { return !!document.querySelector('#f-scatter .mark'); },
-    replay: function () { M.count(host); }
+    mount: mount, spotlight: spotlight,
+    resize: function () { global.Hero.resize(); draw(); },
+    ready: function () { return global.Hero.ready(); },
+    scatterReady: function () { return !!document.querySelector('#f-scatter .mark'); },
+    replay: function () { M.count(document.getElementById('f-miq')); global.Hero.rain(); },
+    stage: function (s, site) { global.Hero.stage(s, site); }
   };
 })(window);

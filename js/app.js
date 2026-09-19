@@ -25,12 +25,12 @@
     var r = parse();
     TABS.forEach(function (t) {
       var on = t === r.name;
-      document.getElementById(t).hidden = !on;
+      document.getElementById('p-' + t).hidden = !on;
       var b = document.getElementById('tab-' + t);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
       b.tabIndex = on ? 0 : -1;
     });
-    var root = document.getElementById(r.name);
+    var root = document.getElementById('p-' + r.name);
     if (!mounted[r.name]) {
       mounted[r.name] = true;
       mods[r.name].mount(root, r.params);

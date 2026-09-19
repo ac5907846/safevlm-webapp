@@ -45,29 +45,50 @@
   }
 
   /* ---------------------------------------------------------------- the steps */
-  var LAB = { model: 'qwen25vl_7b', signal: 'conf_tokenprob', deploy: 'cs10k__test' };
-  var SITES = ['chv', 'gdut', 'shwd', 'pictor', 'sh17', 'cs10k__test'];
+  var HOME = 'cs10k__test';
+  var LAB = { model: 'qwen25vl_7b', signal: 'conf_tokenprob', deploy: HOME };
+
+  /* one stage of the picture on the landing view */
+  function hero(stage, site, ms) {
+    return function () {
+      go('findings');
+      return until(isReady('Findings')).then(function () {
+        mod('Findings').stage(stage, site);
+        return sleep(ms);
+      });
+    };
+  }
 
   var STEPS = [
-    { tab: 'findings', cap: 'Four qualification questions', ms: 7200, run: function () {
+    { tab: 'findings', cap: 'Q1 · every answer trusted', ms: 5600, run: function () {
       var again = isReady('Findings')();
       go('findings');
       return until(isReady('Findings')).then(function () {
+        mod('Findings').stage(0, HOME);
         if (again) mod('Findings').replay();
-        return seq([].slice.call(document.querySelectorAll('#findings .q')), function (q) {
-          q.classList.add('spot');
-          return sleep(1700).then(function () { q.classList.remove('spot'); });
+        return sleep(5600);
+      });
+    } },
+    { tab: 'findings', cap: 'Q2 · wrong answers are just as confident', ms: 4800, run: hero(1, null, 4800) },
+    { tab: 'findings', cap: 'Q3 · the conformal gate defers the rest', ms: 5400, run: hero(2, null, 5400) },
+    { tab: 'findings', cap: 'Q4 · same gate, new site', ms: 9400, run: function () {
+      go('findings');
+      return until(isReady('Findings')).then(function () {
+        return seq([['shwd', 3400], ['chv', 1500], ['gdut', 1500], ['pictor', 1500], ['sh17', 1500]], function (s) {
+          mod('Findings').stage(3, s[0]);
+          return sleep(s[1]);
         });
       });
     } },
-    { tab: 'findings', cap: 'Calibration and discrimination', ms: 8400, run: function () {
+    { tab: 'findings', cap: 'Calibration and discrimination', ms: 6500, run: function () {
       go('findings');
-      return until(isReady('Findings')).then(function () {
+      return until(isReady('Findings')).then(function () { return until(mod('Findings').scatterReady); })
+      .then(function () {
         inView(document.getElementById('f-scatter'));
         return seq(D.store.meta.datasets, function (d) {
           mod('Findings').spotlight(d.key);
           caption('Calibration and discrimination · ' + d.short);
-          return sleep(1150);
+          return sleep(900);
         });
       });
     } },
@@ -82,19 +103,6 @@
         for (k = 39; k >= 10; k--) ks.push(k);
         return seq(ks, function (k) { mod('Lab').target(k); return sleep(k === 40 ? 600 : 70); });
       }).then(function () { return sleep(1800); });
-    } },
-    { tab: 'lab', cap: 'Same threshold, new site', ms: 9900, run: function () {
-      go('lab', Object.assign({ alpha: 0.05 }, LAB));
-      return until(isReady('Lab')).then(function () {
-        mod('Lab').apply(Object.assign({ alpha: '0.05' }, LAB));
-        return until(isReady('Lab'));
-      }).then(function () {
-        return seq(SITES, function (s) {
-          mod('Lab').apply({ deploy: s });
-          caption('Same threshold, new site · ' + D.dataset(s).short);
-          return sleep(s === 'shwd' ? 2400 : 1500);
-        });
-      });
     } },
     { tab: 'answers', cap: 'What each model answered', ms: 13000, run: function () {
       go('answers', { story: 'all', dataset: 'all' });
@@ -118,7 +126,6 @@
   ];
 
   function cleanup() {
-    document.querySelectorAll('#findings .q.spot').forEach(function (q) { q.classList.remove('spot'); });
     if (mod('Findings').spotlight) mod('Findings').spotlight(null);
   }
 

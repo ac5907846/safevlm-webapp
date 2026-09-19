@@ -132,7 +132,7 @@
     var inf = Object.keys(rep.gpu_hours).reduce(function (s, k) { return s + rep.gpu_hours[k]; }, 0);
     var ft = adapters.reduce(function (s, m) { return s + m.adapter.gpu_hours; }, 0);
     document.getElementById('r-gpu-k').innerHTML = M.span(inf + ft, 'num0');
-    M.count(document.querySelector('#repro .grid3'), 1300);
+    M.count(document.querySelector('#p-repro .grid3'), 1300);
     document.getElementById('r-gpu-s').textContent = F.num(inf, 0) + ' inference · ' +
       F.num(ft, 0) + ' fine-tuning · ' + rep.hardware;
     document.getElementById('r-gpu').innerHTML = '<table class="data mini"><tbody>' +
