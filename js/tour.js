@@ -44,7 +44,7 @@
 
     function loop() {
       var g = gen, s = opts.steps[idx];
-      caption(laps === 0 && idx === 0 && opts.first ? opts.first : s.cap);
+      caption(s.cap);
       progress(s);
       s.run(ctx).then(next, function (e) {
         if (e === SKIP) return next();
@@ -136,7 +136,6 @@
   }
   var hero = create({
     name: 'the answers picture',
-    first: 'Autoplay · click anywhere to pause',
     resume: function (i) { return H().state ? H().state().stage : i; },
     steps: [
       { cap: 'Q1 · every answer acted on', ms: 6 * 1900, run: function (c) {
@@ -144,7 +143,7 @@
           return seq(SITES, function (s, i) {
             H().stage(0, s);
             if (i === 0 && c.laps() > 0) H().rain();
-            if (!(i === 0 && c.laps() === 0)) c.caption('Q1 · every answer acted on · ' + short(s));
+            c.caption('Q1 · every answer acted on · ' + short(s));
             return c.sleep(1900);
           });
         });
