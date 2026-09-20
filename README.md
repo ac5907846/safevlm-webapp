@@ -18,7 +18,7 @@ Each tab is its own view with its own address, so a view can be linked and the b
 | Findings | `#findings` | the four steps of machine inspector qualification, one measured number each; the calibration-discrimination plane |
 | Lab | `#lab?model=…&signal=…&deploy=…&alpha=…` | reruns conformal risk control in the browser on the stored model outputs; flags every setting the paper reports as matching or not |
 | Answers | `#answers?story=…&qid=…` | illustrative benchmark items and what each of the six models wrote back, verbatim, with the decision rule's outcome |
-| Reproducibility | `#repro` | recomputes all published conformal operating points live; the manuscript audit, SHA-256 fingerprints of every stored file, pinned model revisions, measured GPU hours |
+| Data and Models | `#repro` | recomputes all published conformal operating points live; the manuscript audit, SHA-256 fingerprints of every stored file, pinned model revisions, measured GPU hours |
 
 At start the page loads `data/meta.json` (2 kB) and the landing picture's answers
 (`data/hero.json`, 76 kB, 34 kB compressed: one model's confidences packed as three-byte integers
@@ -71,7 +71,7 @@ GitHub Pages redeploys on push.
 - `data/items.json` and `img/items/`: 49 illustrative items with resized images, from the two
   collections whose licenses allow redistribution, each shown with its creator, source and license.
 - Not shipped: the full stored predictions, the hidden states and the fine-tuned adapters. The
-  Reproducibility tab lists their SHA-256 fingerprints, which identify the exact files.
+  Data and Models tab lists their SHA-256 fingerprints, which identify the exact files.
 
 ## License
 

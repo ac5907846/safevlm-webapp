@@ -1,4 +1,4 @@
-/* Reproducibility: the paper's conformal results recomputed live from the frozen answers, the
+/* Data and Models: the paper's conformal results recomputed live from the frozen answers, the
    manuscript audit, the SHA-256 fingerprints of every frozen file, the pinned model revisions and
    the measured compute behind them. */
 (function (global) {

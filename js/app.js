@@ -5,7 +5,7 @@
   'use strict';
 
   var TABS = ['findings', 'lab', 'answers', 'repro'];
-  var NAME = { findings: 'Findings', lab: 'Lab', answers: 'Answers', repro: 'Reproducibility' };
+  var NAME = { findings: 'Findings', lab: 'Lab', answers: 'Answers', repro: 'Data and Models' };
   var mods = { findings: window.Findings, lab: window.Lab, answers: window.Answers, repro: window.Repro };
   var mounted = {};
   var current = null;
